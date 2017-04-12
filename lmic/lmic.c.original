@@ -697,23 +697,6 @@ static void initJoinLoop (void) {
   LMIC.txChnl = 0;
 #else
     LMIC.txChnl = os_getRndU1() % 6;
-
-    // 2017-04-12 Wolfgang Klenk
-    // Instead to choose a random frequence for joining the network,
-    // you can use a fixed frequency.
-    // LMIC.txChnl = 0; // EU868: 868.1 MHz
-    // LMIC.txChnl = 2; // EU868: 868.3 MHz
-    // LMIC.txChnl = 4; // EU868: 868.5 MHz
-    // LMIC.txChnl = 1; // EU868: 864.1 MHz -- Seems not to work with Kerlink IoT Station
-    // LMIC.txChnl = 3; // EU868: 864.3 MHz -- Seems not to work with Kerlink IoT Station
-    // LMIC.txChnl = 5; // EU868: 864.5 MHz -- Seems not to work with Kerlink IoT Station
-
-    // 2017-04-12 Wolfgang Klenk
-    // Workaround for Kerlink IoT Station Join Frequencies
-    if (LMIC.txChnl == 1) LMIC.txChnl = 0;
-    if (LMIC.txChnl == 3) LMIC.txChnl = 2;
-    if (LMIC.txChnl == 5) LMIC.txChnl = 4;
-
 #endif
     LMIC.adrTxPow = 14;
     setDrJoin(DRCHG_SET, DR_SF7);
