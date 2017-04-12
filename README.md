@@ -37,9 +37,32 @@ Directory: /examples/hello
 Modifications neccessary: None
 
 This example does not use radio, it just periodically logs a counter value.
-Can be used to checked if the timer implemenation on RPi works as expected.
+Can be used to checked if the timer implementation on RPi works as expected.
 
     cd examples/hello
     make clean
     make
     sudo ./build/hello.out
+
+Possible output:
+
+    000000000 HAL: Initializing ...
+    000000003 HAL: Set radio RST pin to 0x00
+    000000003 HAL: Wait until 000000004 ms
+    000000005 HAL: Set radio RST pin to 0x02
+    000000005 HAL: Wait until 000000010 ms
+    000000011 HAL: Receiving ...
+    000000034 Debug: Initializing
+    000000034 Debug: Hello World!
+    
+    000000034 Debug: Label 'cnt = ' value 0x0
+    000001034 Debug: Hello World!
+    
+    000001034 Debug: Label 'cnt = ' value 0x1
+    000002034 Debug: Hello World!
+    
+    000002034 Debug: Label 'cnt = ' value 0x2
+    000003034 Debug: Hello World!
+    
+    000003034 Debug: Label 'cnt = ' value 0x3
+
