@@ -125,3 +125,62 @@ Possible outpout:
 What can be seen is that after sending the "join" message, the LMIC stack waits
 5 seconds for the receive window and receives the acknowledgement from the LoRa gateway.
 
+## Example "periodic"
+Directory: /examples/periodic
+
+Modifications necessary: 
+
+File /examples/periodic/main.c:
+
+* Adapt "application router ID (LSBF)" like already described under examples/join.
+* Adapt "unique device ID (LSBF)" like already described under examples/join.
+* Adapt "device-specific AES key " like already described under examples/join.
+
+File /examples/periodic/sensor.c:
+
+Added code that reads the CPU temperature of the RPi and returns it as a 2 byte integer
+value.
+
+This examples does a "joins" the network and then sends a sensor value (the CPU temperature)
+every 60 seconds as an unconfirmed message with a payload of 2 bytes.
+
+    cd examples/periodic
+    make clean
+    make
+    sudo ./build/periodic.out
+
+Possible output:
+
+    000000000 HAL: Initializing ...
+    000000004 HAL: Set radio RST pin to 0x00
+    000000005 HAL: Wait until 000000006 ms
+    000000006 HAL: Set radio RST pin to 0x02
+    000000006 HAL: Wait until 000000011 ms
+    000000013 HAL: Receiving ...
+    000000041 Debug: Initializing
+    000000041 Debug: JOINING
+    000004897 Debug: EV_TXSTART
+    000004898 HAL: Sending ...
+    000009960 HAL: Receiving ...
+    000009961 HAL: Wait until 000009962 ms
+    000010033 Debug: JOINED
+    000010034 Debug: 54230
+    000010034 Debug: Label 'val = ' value 0xd3d6
+    000010034 Debug: EV_TXSTART
+    000010034 HAL: Sending ...
+    000011081 HAL: Receiving ...
+    000011081 HAL: Wait until 000011082 ms
+    000012128 HAL: Receiving ...
+    000012128 HAL: Wait until 000012130 ms
+    000016360 Debug: TXCOMPLETE
+    000070068 Debug: 53692
+    000070068 Debug: Label 'val = ' value 0xd1bc
+    000070069 Debug: EV_TXSTART
+    000070070 HAL: Sending ...
+    000071117 HAL: Receiving ...
+    000071117 HAL: Wait until 000071118 ms
+    000072164 HAL: Receiving ...
+    000072164 HAL: Wait until 000072165 ms
+    000076734 Debug: TXCOMPLETE
+
+
