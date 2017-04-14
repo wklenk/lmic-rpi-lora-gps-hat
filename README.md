@@ -36,7 +36,8 @@ Directory: /examples/hello
 Modifications necessary: None
 
 This example does not use radio, it just periodically logs a counter value.
-Can be used to checked if the timer implementation on RPi works as expected.
+Can be used to checked if the timer implementation on RPi works as expected
+and if SPI communication with the radio board is possible.
 
     cd examples/hello
     make clean
@@ -46,6 +47,7 @@ Can be used to checked if the timer implementation on RPi works as expected.
 Possible output:
 
     000000000 HAL: Initializing ...
+    000000003 HAL: Detected SX1276 radio module.
     000000003 HAL: Set radio RST pin to 0x00
     000000003 HAL: Wait until 000000004 ms
     000000005 HAL: Set radio RST pin to 0x02
@@ -109,6 +111,7 @@ work with a Single Channel Gateway.
 Possible outpout:
 
     000000000 HAL: Initializing ...
+    000000000 HAL: Detected SX1276 radio module.
     000000001 HAL: Set radio RST pin to 0x00
     000000002 HAL: Wait until 000000002 ms
     000000003 HAL: Set radio RST pin to 0x02
@@ -152,6 +155,7 @@ every 60 seconds as an unconfirmed message with a payload of 2 bytes.
 Possible output:
 
     000000000 HAL: Initializing ...
+    000000004 HAL: Detected SX1276 radio module.
     000000004 HAL: Set radio RST pin to 0x00
     000000005 HAL: Wait until 000000006 ms
     000000006 HAL: Set radio RST pin to 0x02

@@ -98,6 +98,34 @@ void hal_init () {
       hal_failed();
    }
 
+   // Make sure that SPI communication with the radio module works
+   // by reading the "version" register 0x42 of the radio module.
+   hal_pin_nss(0);
+   hal_spi(0x42 & 0x7F);
+   u1_t val = hal_spi(0x00);
+   hal_pin_nss(1);
+
+   if (0 == val) {
+      fprintf(stderr, "HAL: There is an issue with the SPI communication to the radio module.\n");
+      fprintf(stderr, "HAL: Make sure that \n");
+      fprintf(stderr, "HAL: * The radio module is attached to your Raspberry Pi\n");
+      fprintf(stderr, "HAL: * The power supply provides enough power\n");
+      fprintf(stderr, "HAL: * SPI is enabled on your Raspberry Pi. Use the tool \"raspi-config\" to enable it.\n");
+      hal_failed();
+   }
+
+#ifdef DEBUG_HAL
+   if (0x12 == val) {
+      fprintf(stdout, "%09d HAL: Detected SX1276 radio module.\n", osticks2ms(hal_ticks()));
+   } 
+   else if (0x22 == val) {
+      fprintf(stdout, "%09d HAL: Detected SX1272 radio module.\n", osticks2ms(hal_ticks()));
+   } 
+   else {
+      fprintf(stdout, "%09d HAL: Detected unknown radio module: 0x%02x\n", osticks2ms(hal_ticks()), val);
+   }
+#endif
+      
 }
 
 void hal_failed () {
