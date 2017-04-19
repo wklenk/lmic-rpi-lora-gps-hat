@@ -53,7 +53,21 @@ void hal_pin_rst (u1_t val);
  *   - write given byte 'outval'
  *   - read byte and return value
  */
-u1_t hal_spi (u1_t outval);
+// u1_t hal_spi (u1_t outval);
+
+/*
+ * 2017-04-19 Wolfgang Klenk
+ * Perform Read/Write operations with 8-bit address and 8-bit data
+ */
+u1_t hal_spi_single(u1_t address, u1_t outval);
+
+/*
+ * 2017-04-19 Wolfgang Klenk
+ * Perform Read/Write operations with 8-bit address and buffer
+ */
+void hal_spi_buffer(u1_t address, u1_t *buffer, int len);
+
+
 
 /*
  * disable all CPU interrupts.
