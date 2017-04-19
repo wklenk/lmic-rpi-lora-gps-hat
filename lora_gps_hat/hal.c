@@ -101,8 +101,7 @@ void hal_init () {
    // Make sure that SPI communication with the radio module works
    // by reading the "version" register 0x42 of the radio module.
    hal_pin_nss(0);
-   hal_spi(0x42 & 0x7F);
-   u1_t val = hal_spi(0x00);
+   u1_t val = hal_spi_single(0x42 & 0x7F, 0x00);
    hal_pin_nss(1);
 
    if (0 == val) {
@@ -144,7 +143,7 @@ void hal_pin_nss (u1_t val) {
 // switch between radio RX/TX
 void hal_pin_rxtx (u1_t val) {
 #ifdef DEBUG_HAL
-   val > 0 ? fprintf(stdout, "%09d HAL: Sending ...\n", osticks2ms(hal_ticks()), val) : fprintf(stdout, "%09d HAL: Receiving ...\n", osticks2ms(hal_ticks()), val);
+   val > 0 ? fprintf(stdout, "%09d HAL: Sending ...\n", osticks2ms(hal_ticks())) : fprintf(stdout, "%09d HAL: Receiving ...\n", osticks2ms(hal_ticks()));
 #endif
 
    // Nothing to do. There is no such pin in the Lora/GPS HAT module.
@@ -167,13 +166,6 @@ void hal_pin_rst (u1_t val) {
 // perform 8-bit SPI transaction. 
 // write given byte outval to radio, read byte from radio and return value.
 u1_t hal_spi (u1_t out) {
-   static u1_t isAddress = 0x01;
-   static u1_t address = 0x00;
-   u1_t value = out;
-
-   if (isAddress) {
-      address = out;
-   }
 
    u1_t rc = wiringPiSPIDataRW(0, &out, 1);
    if (rc < 0) {
@@ -181,20 +173,39 @@ u1_t hal_spi (u1_t out) {
       hal_failed();
    }
 
-/*
-   if (!isAddress && (address != 0x2c)) {
-      if (address & 0x80) {
-         fprintf(stdout, "%09d HAL: SPI write to address 0x%02x value 0x%02x\n", osticks2ms(hal_ticks()), address & 0x7F, value);
-         fprintf(stdout, "   writeReg(0x%02x, 0x%02x);\n", address & 0x7F, value);
-      } else {
-         fprintf(stdout, "%09d HAL: SPI read from address 0x%02x value 0x%02x\n", osticks2ms(hal_ticks()), address, out);
-      }
-   } 
-*/
-
-   isAddress = !isAddress;
-
    return out;
+}
+
+// SPI transfer with address and one single byte.
+u1_t hal_spi_single (u1_t address, u1_t out) {
+
+   u1_t buffer[2];
+   buffer[0] = address;
+   buffer[1] = out;
+
+   u1_t rc = wiringPiSPIDataRW(0, buffer, 2);
+   if (rc < 0) {
+      fprintf(stderr, "HAL: Cannot send data on SPI: %s\n", strerror(errno));
+      hal_failed();
+   }
+
+   return buffer[1];
+}
+
+// SPI transfer with address and byte buffer.
+void hal_spi_buffer (u1_t address, u1_t *buffer, int len) {
+
+   u1_t buf[len + 1];
+   buf[0] = address;
+   memcpy(&buf[1], buffer, len);
+
+   u1_t rc = wiringPiSPIDataRW(0, buf, len + 1);
+   if (rc < 0) {
+      fprintf(stderr, "HAL: Cannot send data on SPI: %s\n", strerror(errno));
+      hal_failed();
+   }
+
+   memcpy(buffer, &buf[1], len);
 }
 
 void hal_disableIRQs () {
