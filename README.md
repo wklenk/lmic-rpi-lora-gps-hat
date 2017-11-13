@@ -15,6 +15,34 @@ default. For instructions on manual installation please refer to the
 following site: 
 http://wiringpi.com/download-and-install/
 
+### Check hardware revision of Dragino LoRa/GPS HAT
+Look for a hardware revision number at the LoRa/GPS HAT PCB.
+It should read "Lora/GPS HAT for RPI v1.3". If the version is below 1.3, you
+need to add some traces. Locate the header pins DIO0, DIO1 and DIO2 on the PCB.
+* DIO0 is already connected to physical pin #7 aka WiringPi pin 7 aka BCM pin 4.
+* DIO1 *has to be manually connected* to physical pin #16 aka WiringPi pin 4 aka BCM pin 23.
+* DIO2 *has to be manually connected* to physical pin #18 aka WiringPi pin 5 aka BCM pin 24.
+
+The pin numbering may be confusing, but WiringPi can be used to print out all these
+pin numbers.
+
+    pi@rpi3:~/lmic-rpi-lora-gps-hat $ gpio readall
+
+    +-----+-----+---------+------+---+---Pi 3---+---+------+---------+-----+-----+
+    | BCM | wPi |   Name  | Mode | V | Physical | V | Mode | Name    | wPi | BCM |
+    +-----+-----+---------+------+---+----++----+---+------+---------+-----+-----+
+    |     |     |    3.3v |      |   |  1 || 2  |   |      | 5v      |     |     |
+    |   2 |   8 |   SDA.1 |   IN | 1 |  3 || 4  |   |      | 5V      |     |     |
+    |   3 |   9 |   SCL.1 |   IN | 1 |  5 || 6  |   |      | 0v      |     |     |
+    |   4 |   7 | GPIO. 7 |   IN | 0 |  7 || 8  | 0 | IN   | TxD     | 15  | 14  |
+    |     |     |      0v |      |   |  9 || 10 | 1 | IN   | RxD     | 16  | 15  |
+    |  17 |   0 | GPIO. 0 |   IN | 1 | 11 || 12 | 0 | IN   | GPIO. 1 | 1   | 18  |
+    |  27 |   2 | GPIO. 2 |   IN | 0 | 13 || 14 |   |      | 0v      |     |     |
+    |  22 |   3 | GPIO. 3 |   IN | 0 | 15 || 16 | 0 | IN   | GPIO. 4 | 4   | 23  |
+    |     |     |    3.3v |      |   | 17 || 18 | 0 | IN   | GPIO. 5 | 5   | 24  |
+    |  10 |  12 |    MOSI | ALT0 | 0 | 19 || 20 |   |      | 0v      |     |     |
+
+
 ### Enable SPI interface
 Per default, the SPI ports on the Raspberry Pi are disabled. You need to
 manually enable them using raspi-config.
