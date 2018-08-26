@@ -48,6 +48,7 @@
 
 #include "lmic.h"
 #include "gpio.h"
+#include "debug.h"
 
 // Note: WiringPi Pin Numbering Schema
 const int WIRING_PI_PIN_NSS = 6;
@@ -70,7 +71,7 @@ void hal_init () {
    hal_time_init();
 
 #ifdef DEBUG_HAL
-   fprintf(stdout, "%09d HAL: Initializing ...\n", osticks2ms(hal_ticks()));
+   DEBUG_INFO("HAL: Initializing ...");
 #endif
 
    wiringPiSetup();
@@ -94,7 +95,7 @@ void hal_init () {
 
    int rc = wiringPiSPISetup(0, 10000000);
    if (rc < 0) {
-      fprintf(stderr, "HAL: Initialization of SPI failed: %s\n", strerror(errno));
+      DEBUG_ERR("HAL: Initialization of SPI failed: %s", strerror(errno));
       hal_failed();
    }
 
@@ -105,30 +106,30 @@ void hal_init () {
    hal_pin_nss(1);
 
    if (0 == val) {
-      fprintf(stderr, "HAL: There is an issue with the SPI communication to the radio module.\n");
-      fprintf(stderr, "HAL: Make sure that \n");
-      fprintf(stderr, "HAL: * The radio module is attached to your Raspberry Pi\n");
-      fprintf(stderr, "HAL: * The power supply provides enough power\n");
-      fprintf(stderr, "HAL: * SPI is enabled on your Raspberry Pi. Use the tool \"raspi-config\" to enable it.\n");
+      DEBUG_ERR("HAL: There is an issue with the SPI communication to the radio module");
+      DEBUG_ERR("HAL: Make sure that");
+      DEBUG_ERR("HAL: * The radio module is attached to your Raspberry Pi");
+      DEBUG_ERR("HAL: * The power supply provides enough power");
+      DEBUG_ERR("HAL: * SPI is enabled on your Raspberry Pi. Use the tool \"raspi-config\" to enable it.");
       hal_failed();
    }
 
 #ifdef DEBUG_HAL
    if (0x12 == val) {
-      fprintf(stdout, "%09d HAL: Detected SX1276 radio module.\n", osticks2ms(hal_ticks()));
+      DEBUG_INFO("HAL: Detected SX1276 radio module.");
    } 
    else if (0x22 == val) {
-      fprintf(stdout, "%09d HAL: Detected SX1272 radio module.\n", osticks2ms(hal_ticks()));
+      DEBUG_INFO("HAL: Detected SX1272 radio module.");
    } 
    else {
-      fprintf(stdout, "%09d HAL: Detected unknown radio module: 0x%02x\n", osticks2ms(hal_ticks()), val);
+      DEBUG_INFO("HAL: Detected unknown radio module: 0x%02x", val);
    }
 #endif
       
 }
 
 void hal_failed () {
-   fprintf(stderr, "%09d HAL: Failed. Aborting.\n", osticks2ms(hal_ticks()));
+   DEBUG_ERR("HAL: Failed. Aborting.");
    for (int i=0 ; i<3 ; i++) {
       gpioUnexportPin(BCM_PIN_DIO[i]);
    }
@@ -143,7 +144,7 @@ void hal_pin_nss (u1_t val) {
 // switch between radio RX/TX
 void hal_pin_rxtx (u1_t val) {
 #ifdef DEBUG_HAL
-   val > 0 ? fprintf(stdout, "%09d HAL: Sending ...\n", osticks2ms(hal_ticks())) : fprintf(stdout, "%09d HAL: Receiving ...\n", osticks2ms(hal_ticks()));
+   val > 0 ? DEBUG_INFO("HAL: Sending ...") : DEBUG_INFO("HAL: Receiving ...");
 #endif
 
    // Nothing to do. There is no such pin in the Lora/GPS HAT module.
@@ -152,7 +153,7 @@ void hal_pin_rxtx (u1_t val) {
 // set radio RST pin to given value (or keep floating!)
 void hal_pin_rst (u1_t val) {
 #ifdef DEBUG_HAL
-   fprintf(stdout, "%09d HAL: Set radio RST pin to 0x%02x\n", osticks2ms(hal_ticks()), val);
+   DEBUG_INFO("HAL: Set radio RST pin to 0x%02x", val);
 #endif
 
    if(val == 0 || val == 1) { // drive pin
@@ -169,7 +170,7 @@ u1_t hal_spi (u1_t out) {
 
    u1_t rc = wiringPiSPIDataRW(0, &out, 1);
    if (rc < 0) {
-      fprintf(stderr, "HAL: Cannot send data on SPI: %s\n", strerror(errno));
+      DEBUG_ERR("HAL: Cannot send data on SPI: %s", strerror(errno));
       hal_failed();
    }
 
@@ -185,7 +186,7 @@ u1_t hal_spi_single (u1_t address, u1_t out) {
 
    u1_t rc = wiringPiSPIDataRW(0, buffer, 2);
    if (rc < 0) {
-      fprintf(stderr, "HAL: Cannot send data on SPI: %s\n", strerror(errno));
+      DEBUG_ERR("HAL: Cannot send data on SPI: %s", strerror(errno));
       hal_failed();
    }
 
@@ -201,7 +202,7 @@ void hal_spi_buffer (u1_t address, u1_t *buffer, int len) {
 
    u1_t rc = wiringPiSPIDataRW(0, buf, len + 1);
    if (rc < 0) {
-      fprintf(stderr, "HAL: Cannot send data on SPI: %s\n", strerror(errno));
+      DEBUG_ERR("HAL: Cannot send data on SPI: %s", strerror(errno));
       hal_failed();
    }
 
@@ -218,7 +219,7 @@ void hal_enableIRQs () {
 void hal_time_init() {
    int rc = clock_gettime(CLOCK_MONOTONIC_RAW, &ts_start);
    if (rc < 0) {
-      fprintf(stderr, "HAL: Cannot initialize timer: %s\n", strerror(errno));
+      DEBUG_ERR("HAL: Cannot initialize timer: %s", strerror(errno));
       hal_failed();
    }
 }
@@ -231,7 +232,7 @@ u4_t hal_ticks () {
    struct timespec ts;
    int rc = clock_gettime(CLOCK_MONOTONIC_RAW, &ts);
    if (rc < 0) {
-      fprintf(stderr, "HAL: Cannot get current time: %s\n", strerror(errno));
+      DEBUG_ERR("HAL: Cannot get current time: %s", strerror(errno));
       hal_failed();
    }
 
@@ -248,14 +249,15 @@ u4_t hal_ticks () {
 
 // busy wait until timestamp (in ticks) is reached
 void hal_waitUntil (u4_t target_ticks) {
-#ifdef DEBUG_HAL
-   fprintf(stdout, "%09d HAL: Wait until %09d ms\n", osticks2ms(hal_ticks()), osticks2ms(target_ticks));
-#endif
 
    // TODO: Deal with tick counter overflow
 
    u4_t current_ticks = hal_ticks();
    s4_t diff_ticks = target_ticks - current_ticks;
+
+#ifdef DEBUG_HAL
+   DEBUG_INFO("HAL: Wait for %d ms", osticks2ms(diff_ticks));
+#endif
 
    if (diff_ticks > 0) {
       s4_t diff_us = osticks2us(diff_ticks);
@@ -307,7 +309,7 @@ void hal_sleep () {
    if (sleep_interval_ms > 0) {
       int rc = gpioWaitForInterrupt(BCM_PIN_DIO, 3, sleep_interval_ms);
       if(rc < 0) {
-         fprintf(stderr, "HAL: Cannot poll: %s\n", strerror(errno));
+         DEBUG_ERR("HAL: Cannot poll: %s", strerror(errno));
          hal_failed();
       }
 

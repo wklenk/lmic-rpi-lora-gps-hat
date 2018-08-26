@@ -39,19 +39,19 @@
 #include "debug.h"
 
 void debug_init () {
-   fprintf(stdout, "%09d Debug: Initializing\n", osticks2ms(hal_ticks()));
+   DEBUG_INFO("Debug: Initializing");
 }
 
 void debug_str (const char* str) {
-   fprintf(stdout, "%09d Debug: %s\n", osticks2ms(hal_ticks()), str);
+   DEBUG_INFO("Debug: %s", str);
 }
 
 void debug_val (const char* label, u4_t val) {
-   fprintf(stdout, "%09d Debug: Label '%s' value 0x%x\n", osticks2ms(hal_ticks()), label, val);
+   DEBUG_INFO("Debug: Label '%s' value 0x%x", label, val);
 }
 
 void debug_led (int val) {
-   // fprintf(stdout, "Debug: Set LED to 0x%02x\n", val);
+   // DEBUG_INFO("Debug: Set LED to 0x%02x", val);
 }
 
 void debug_event (int ev) {
@@ -78,5 +78,5 @@ void debug_event (int ev) {
 }
 
 void debug_buf (const u1_t* buf, int len) {
-   fprintf(stdout, "%09d Debug: Buffer received. length=%d\n", osticks2ms(hal_ticks()), len);
+   DEBUG_INFO("Debug: Buffer received. length=%d", len);
 }

@@ -25,6 +25,18 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#ifdef DEBUG_SYSLOG
+#include <syslog.h>
+#endif
+
+#ifdef DEBUG_SYSLOG
+#define DEBUG_INFO(format, ...) syslog(LOG_INFO, format, ## __VA_ARGS__)
+#define DEBUG_ERR(format, ...) syslog(LOG_ERR, format, ## __VA_ARGS__)
+#else
+#define DEBUG_INFO(format, ...) fprintf(stdout, "%09d " format "\n", osticks2ms(hal_ticks()), ## __VA_ARGS__)
+#define DEBUG_ERR(format, ...) fprintf(stderr, "%09d " format "\n", osticks2ms(hal_ticks()), ## __VA_ARGS__)
+#endif
+
 // intialize debug library
 void debug_init (void);
 
