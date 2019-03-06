@@ -41,7 +41,7 @@
 // GLOBAL VARIABLES //
 //////////////////////
 
-char Data[2][11];
+char customData[2][11];
 int size;
 
 //////////////////////////////////////////////////
@@ -84,7 +84,7 @@ void os_getDevKey (u1_t* buf) {
 
 // initial job
 static void initfunc (osjob_t* j) {
-    // Load log.out into Data[]
+    // Load log.out into customData[]
     // immediately prepare next transmissio
     static const char* fn = "/home/pi/MasterCode/log.out";
     int fd = open(fn, O_RDWR);
@@ -93,24 +93,28 @@ static void initfunc (osjob_t* j) {
 	    exit(EXIT_FAILURE);
     }
         
-    char data[2][10];
-    char buffer[10];
+    char data[2][11];
+    char buffer[11];
     int linecount = 0;
     int rc;
     do {
-	    rc = read(fd, &Data[linecount], 10);
+	    rc = read(fd, &customData[linecount], 11);
 	    if (rc < 0) {
 		    perror("bad stuff.");
 	            exit(EXIT_FAILURE);
         	}
-	    Data[linecount][rc-1] = 0;
-	    debug_str(Data[linecount]);
+	    customData[linecount][rc-1] = 0;
+	    debug_str(customData[linecount]);
 	    linecount++;
-    } while (rc == 10);
+    } while (rc == 11);
     //char *rawData[1100] = 
     // reset MAC stat
     close(fd);
-    size = linecount;
+    debug_str("///DATA HERE//////");
+    debug_str(customData[0]);
+    debug_str(customData[1]);
+    debug_str("///DATA HERE//////");
+    size = linecount - 1;
     LMIC_reset();
     // start joining
     LMIC_startJoining();
@@ -141,7 +145,7 @@ int main () {
 
 void onEvent (ev_t ev) {
     debug_event(ev);
-    if(size <= 0){
+    if(size < 0){
 	    debug_str("/////////////FINISHED///////////");
 	    exit(0);
     }
@@ -164,9 +168,10 @@ void onEvent (ev_t ev) {
 	*/
         debug_str("#############################################################");
        
-        for(int i =0; i < strlen(&Data[size][i]); i++) {
-            LMIC.frame[i] = Data[size][i];
-	    debug_str(&Data[size][i]);
+        for(int i =0; i < 10; i++) {
+            LMIC.frame[i] = customData[size][i];
+	    //debug_str(&customData[size][i]);
+	    debug_str("/////////////");
 	    debug_str(&LMIC.frame[i]);
         }
         
