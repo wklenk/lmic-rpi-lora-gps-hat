@@ -37,6 +37,12 @@
 #include <string.h>
 #include <unistd.h>
 #include <errno.h>
+//////////////////////
+// GLOBAL VARIABLES //
+//////////////////////
+
+char Data[2][11];
+int size;
 
 //////////////////////////////////////////////////
 // CONFIGURATION (FOR APPLICATION CALLBACKS BELOW)
@@ -78,7 +84,33 @@ void os_getDevKey (u1_t* buf) {
 
 // initial job
 static void initfunc (osjob_t* j) {
-    // reset MAC state
+    // Load log.out into Data[]
+    // immediately prepare next transmissio
+    static const char* fn = "/home/pi/MasterCode/log.out";
+    int fd = open(fn, O_RDWR);
+    if(fd < 0) {
+	    perror(fn);
+	    exit(EXIT_FAILURE);
+    }
+        
+    char data[2][10];
+    char buffer[10];
+    int linecount = 0;
+    int rc;
+    do {
+	    rc = read(fd, &Data[linecount], 10);
+	    if (rc < 0) {
+		    perror("bad stuff.");
+	            exit(EXIT_FAILURE);
+        	}
+	    Data[linecount][rc-1] = 0;
+	    debug_str(Data[linecount]);
+	    linecount++;
+    } while (rc == 10);
+    //char *rawData[1100] = 
+    // reset MAC stat
+    close(fd);
+    size = linecount;
     LMIC_reset();
     // start joining
     LMIC_startJoining();
@@ -109,6 +141,10 @@ int main () {
 
 void onEvent (ev_t ev) {
     debug_event(ev);
+    if(size <= 0){
+	    debug_str("/////////////FINISHED///////////");
+	    exit(0);
+    }
     
     switch(ev) {
         
@@ -122,40 +158,16 @@ void onEvent (ev_t ev) {
         if(LMIC.dataLen) { // data received in rx slot after tx
             debug_buf(LMIC.frame+LMIC.dataBeg, LMIC.dataLen);
         }
-        static const char* fn = "/home/pi/MasterCode/log.out";
-        int fd;
     tx:
-        // immediately prepare next transmission
-        fd = open(fn, O_RDWR);
-        if(fd < 0) {
-            perror(fn);
-            exit(EXIT_FAILURE);
-        }
-        
-        char data[10];
-        char buffer[10];
-        int rc = read(fd, &data, 10);
-        if (rc < 0) {
-            perror("bad stuff.");
-            exit(EXIT_FAILURE);
-        }
-        /* // Found at: https://codereview.stackexchange.com/questions/156477/c-program-to-count-number-of-lines-in-a-file
-         while ((bytes = fread(buffer, 1, sizeof(buffer) - 1, fd))) {
-         lastchar = buffer[bytes - 1];
-         for (char *c = buffer; (c = memchr(c, '\n', bytes - (c - buffer))); c++) {
-         lines++;
-         }
-         }
-         */
-        close(fd);
-        debug_str("#############################################################");
+        /*debug_str("#############################################################");
         debug_str(data);
+	*/
         debug_str("#############################################################");
-        
-        for(int i =0; i < strlen(data); i++) {
-            //LMIC.frame[i] = sprintf(buffer, "%x", data[i]);
-            
-            LMIC.frame[i] = data[i];
+       
+        for(int i =0; i < strlen(&Data[size][i]); i++) {
+            LMIC.frame[i] = Data[size][i];
+	    debug_str(&Data[size][i]);
+	    debug_str(&LMIC.frame[i]);
         }
         
         /*
@@ -175,6 +187,7 @@ void onEvent (ev_t ev) {
         // schedule transmission (port 1, datalen 1, no ack requested)
         LMIC_setTxData2(1, LMIC.frame, 10, 1);
         // (will be sent as soon as duty cycle permits)
+	size--;
         break;
     }
 }
