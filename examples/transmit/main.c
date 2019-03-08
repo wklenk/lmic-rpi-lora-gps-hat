@@ -41,7 +41,7 @@
 // GLOBAL VARIABLES //
 //////////////////////
 
-char customData[2][11];
+char customData[1000][11];
 int size;
 
 //////////////////////////////////////////////////
@@ -92,8 +92,6 @@ static void initfunc (osjob_t* j) {
 	    perror(fn);
 	    exit(EXIT_FAILURE);
     }
-        
-    char data[2][11];
     char buffer[11];
     int linecount = 0;
     int rc;
@@ -107,14 +105,15 @@ static void initfunc (osjob_t* j) {
 	    debug_str(customData[linecount]);
 	    linecount++;
     } while (rc == 11);
-    //char *rawData[1100] = 
     // reset MAC stat
     close(fd);
+    size = linecount - 2;
     debug_str("///DATA HERE//////");
-    debug_str(customData[0]);
-    debug_str(customData[1]);
+    for(int i = 0; i <= size; i++){
+    	debug_str(customData[i]);
+    }
+    printf("%d\n",size);
     debug_str("///DATA HERE//////");
-    size = linecount - 1;
     LMIC_reset();
     // start joining
     LMIC_startJoining();
@@ -166,30 +165,14 @@ void onEvent (ev_t ev) {
         /*debug_str("#############################################################");
         debug_str(data);
 	*/
-        debug_str("#############################################################");
+        //debug_str("#############################################################");
        
-        for(int i =0; i < 10; i++) {
+        for(int i = 0; i < 10; i++) {
             LMIC.frame[i] = customData[size][i];
-	    //debug_str(&customData[size][i]);
-	    debug_str("/////////////");
-	    debug_str(&LMIC.frame[i]);
+	    //debug_str(&customData[size][i])
+	    //debug_str("/////////////");
+	    //debug_str(&LMIC.frame[i]);
         }
-        
-        /*
-         LMIC.frame[0] = 0x0;
-         LMIC.frame[1] = 0x1;
-         LMIC.frame[2] = 0x1;
-         LMIC.frame[3] = 0x0;
-         LMIC.frame[4] = 0x1;
-         LMIC.frame[5] = 0x6;
-         LMIC.frame[6] = 0xa;
-         LMIC.frame[7] = 0x3;
-         LMIC.frame[8] = 0x2;
-         LMIC.frame[9] = 0xf;
-         */
-        
-        //LMIC.frame[0] = LMIC.snr;
-        // schedule transmission (port 1, datalen 1, no ack requested)
         LMIC_setTxData2(1, LMIC.frame, 10, 1);
         // (will be sent as soon as duty cycle permits)
 	size--;
